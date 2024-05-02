@@ -2,6 +2,7 @@ import os
 import time
 import matplotlib.pyplot as plt
 
+# Burrows-Wheeler Transform (BWT) compression
 def bwt_compress(text):
     # Add end of text marker
     text += '$'
@@ -11,22 +12,38 @@ def bwt_compress(text):
     bwt = ''.join(text[i-1] for i in suffix_array)
     return bwt
 
+# Move-to-Front (MTF) encoding
 def mtf_encode(text):
-    alphabet = sorted(set(text))
+    alphabet = list(sorted(set(text)))
     encoded_text = []
     for char in text:
         idx = alphabet.index(char)
         encoded_text.append(idx)
         # Move the character to the front of the alphabet
-        alphabet = [alphabet.pop(idx)] + alphabet
+        del alphabet[idx]
+        alphabet.insert(0, char)
     return encoded_text
 
+# Run-Length Encoding (RLE) compression
+def rle_compress(data):
+    compressed_data = []
+    count = 1
+    for i in range(1, len(data)):
+        if data[i] == data[i - 1]:
+            count += 1
+        else:
+            compressed_data.append((data[i - 1], count))
+            count = 1
+    compressed_data.append((data[-1], count))
+    return compressed_data
+
+# Compress text
 def compress(text):
     bwt = bwt_compress(text)
     mtf = mtf_encode(bwt)
-    return mtf
+    rle = rle_compress(mtf)
+    return rle
 
-# Measure time taken for compression
 def measure_compression_time(filename):
     with open(filename, 'r') as file:
         text = file.read()
